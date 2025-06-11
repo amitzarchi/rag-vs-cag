@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${bagelFatOne.variable} antialiased`}>
-        <ThemeProvider attribute="class" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light">
           <div className="flex flex-col min-h-screen mt-[100px] max-w-screen-lg mx-auto p-4">
             <main className="flex-grow">{children}</main>
           </div>
