@@ -4,16 +4,16 @@ import { useChat } from "@ai-sdk/react";
 import { Bot, Clock, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { MemoizedMarkdown } from "./app/chat/components/memoized-markdown";
-import { ToolInvocation } from "./app/chat/components/tools";
+import { MemoizedMarkdown } from "../chat/components/memoized-markdown";
 import { useState, useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
 import { useStopwatch } from "react-timer-hook";
+import { ToolInvocation } from "../app/chat/components/tools";
 
-export default function Chat() {
+export default function LargeDatasetChat() {
   const [sharedInput, setSharedInput] = useState("");
 
-  // Timer for first chat
+  // Timer for first chat (RAG)
   const {
     milliseconds: timer1Milliseconds,
     totalSeconds: timer1Seconds,
@@ -25,7 +25,7 @@ export default function Chat() {
     reset: resetTimer1,
   } = useStopwatch({ autoStart: false, interval: 10 });
 
-  // Timer for second chat
+  // Timer for second chat (CAG)
   const {
     milliseconds: timer2Milliseconds,
     totalSeconds: timer2Seconds,
@@ -37,35 +37,31 @@ export default function Chat() {
     reset: resetTimer2,
   } = useStopwatch({ autoStart: false, interval: 10 });
 
-  // First chat instance for /api/chat
+  // First chat instance for /api/largedataset/rag
   const { 
     messages: messages1, 
     handleSubmit: handleSubmit1, 
     status: status1,
     append: append1 
   } = useChat({
-    api: "/api/chat",
+    api: "/api/largedataset/rag",
     maxSteps: 5,
-    // Handle client-side tool execution
     async onToolCall({ toolCall }) {
-      
-      
+      // Tool calls will be handled by the server
     },
   });
 
-  // Second chat instance for /api/chat2
+  // Second chat instance for /api/largedataset/cag
   const { 
     messages: messages2, 
     handleSubmit: handleSubmit2, 
     status: status2,
     append: append2 
   } = useChat({
-    api: "/api/chat2",
+    api: "/api/largedataset/cag",
     maxSteps: 5,
-    // Handle client-side tool execution
     async onToolCall({ toolCall }) {
-      
-      
+      // Tool calls will be handled by the server
     },
   });
 
@@ -91,7 +87,7 @@ export default function Chat() {
     e.preventDefault();
     if (!sharedInput.trim()) return;
 
-    // Reset both timers (they will be started by useEffect when status becomes "submitted")
+    // Reset both timers
     resetTimer1();
     resetTimer2();
 
@@ -111,14 +107,18 @@ export default function Chat() {
   const renderMessages = (messages: any[], status: string, title: string, timerMilliseconds: number, timerSeconds: number, isTimerRunning: boolean) => (
     <ScrollArea type="always" className="flex-1 px-4 pt-6 h-0">
       <ScrollBar className="" />
-      <div className=" pr-5">
+      <div className="pr-5">
         <div className="flex justify-between items-center">
           <span className="text-xl ml-2 text-neutral-700 font-extrabold">{title}</span>
           <div className="text-md font-mono bg-neutral-200 dark:bg-neutral-800 px-2 pt-2 pb-1 rounded">
             {isTimerRunning ? (
-              <span className="text-blue-600 dark:text-blue-400 flex justify-center font-bold items-center gap-2"><Clock className="size-4 mb-1 stroke-3" /> {formatTime(timerSeconds, timerMilliseconds)}</span>
+              <span className="text-blue-600 dark:text-blue-400 flex justify-center font-bold items-center gap-2">
+                <Clock className="size-4 mb-1 stroke-3" /> {formatTime(timerSeconds, timerMilliseconds)}
+              </span>
             ) : (
-              <span className="text-neutral-800 flex justify-center font-bold items-center gap-2"><Clock className="size-4 mb-1 stroke-3" /> {formatTime(timerSeconds, timerMilliseconds)} </span>
+              <span className="text-neutral-800 flex justify-center font-bold items-center gap-2">
+                <Clock className="size-4 mb-1 stroke-3" /> {formatTime(timerSeconds, timerMilliseconds)}
+              </span>
             )}
           </div>
         </div>
@@ -166,18 +166,17 @@ export default function Chat() {
   );
 
   return (
-    <div className="flex flex-col mt-[5vh] h-[calc(70vh)] w-full max-w-7xl mx-auto rounded-lg">
-
+    <div className="flex flex-col mt-[5vh] h-[calc(80vh)] w-full max-w-7xl mx-auto rounded-lg">
       {/* Messages area with two columns */}
       <div className="flex flex-1 gap-4 p-4 h-0">
-        {/* First chat messages */}
+        {/* First chat messages (RAG) */}
         <div className="flex-1 flex flex-col border-neutral-500 border-3 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 rounded-lg">
-          {renderMessages(messages1, status1, "RAG", timer1Milliseconds, timer1Seconds, timer1Running)}
+          {renderMessages(messages1, status1, "RAG - NBA Players", timer1Milliseconds, timer1Seconds, timer1Running)}
         </div>
 
-        {/* Second chat messages */}
+        {/* Second chat messages (CAG) */}
         <div className="flex-1 flex flex-col border-neutral-500 border-3 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 rounded-lg">
-          {renderMessages(messages2, status2, "CAG", timer2Milliseconds, timer2Seconds, timer2Running)}
+          {renderMessages(messages2, status2, "CAG - NBA Players", timer2Milliseconds, timer2Seconds, timer2Running)}
         </div>
       </div>
 
@@ -188,10 +187,10 @@ export default function Chat() {
             className="bg-card w-full h-12"
             value={sharedInput}
             onChange={(e) => setSharedInput(e.target.value)}
-            placeholder="Ask anything... (anything = 'what is my favorite food?')"
+            placeholder="Ask about NBA players..."
           />
         </form>
       </div>
     </div>
   );
-}
+} 
